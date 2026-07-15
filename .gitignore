@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+coverage/
+
+# Environment / secrets
+.env
+.env.local
+*.local
+
+# Datastore
+*.sqlite
+*.sqlite3
+*.db
+data/
+
+# Logs
+*.log
+logs/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
