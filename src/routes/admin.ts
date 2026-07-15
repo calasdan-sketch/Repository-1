@@ -1,0 +1,63 @@
+import express, { type Router, type Request, type Response } from 'express';
+import { createLogger } from '../lib/logger.js';
+import { Repository } from '../models/repository.js';
+import { Orchestrator } from '../jobs/orchestrator.js';
+
+const log = createLogger('admin');
+
+/**
+ * Build the admin API router.
+ *
+ * Provides read access to mappings/orders/AI content and endpoints to trigger
+ * workflows and approve staged (human-in-the-loop) items.
+ */
+export function createAdminRouter(
+  repo: Repository = new Repository(),
+  orchestrator: Orchestrator = new Orchestrator(),
+): Router {
+  const router = express.Router();
+  router.use(express.json());
+
+  router.get('/products', (_req: Request, res: Response) => {
+    res.json({ products: repo.listProductMappings() });
+  });
+
+  router.get('/orders', (_req: Request, res: Response) => {
+    res.json({ orders: repo.listOrders() });
+  });
+
+  router.get('/ai-content', (_req: Request, res: Response) => {
+    res.json({ content: repo.listAiContent() });
+  });
+
+  // Trigger sourcing + content generation for a specific AutoDS product.
+  router.post('/products/import', async (req: Request, res: Response) => {
+    const { autodsProductId } = req.body ?? {};
+    if (!autodsProductId) {
+      res.status(400).json({ error: 'autodsProductId is required' });
+      return;
+    }
+    try {
+      const result = await orchestrator.importAndPublishProduct(
+        String(autodsProductId),
+      );
+      res.json(result);
+    } catch (error) {
+      log.error({ err: String(error) }, 'Import failed');
+      res.status(502).json({ error: 'import failed' });
+    }
+  });
+
+  // Approve a piece of staged AI content (human-in-the-loop).
+  router.post('/ai-content/:id/approve', (req: Request, res: Response) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      res.status(400).json({ error: 'invalid id' });
+      return;
+    }
+    repo.updateAiContentStatus(id, 'approved');
+    res.json({ id, status: 'approved' });
+  });
+
+  return router;
+}
