@@ -3,6 +3,7 @@ import { createLogger } from '../lib/logger.js';
 import { createRateLimiter } from '../lib/rate-limit.js';
 import { Repository } from '../models/repository.js';
 import { Orchestrator } from '../jobs/orchestrator.js';
+import { ShopifyService } from '../services/shopify.js';
 
 const log = createLogger('admin');
 
@@ -15,10 +16,22 @@ const log = createLogger('admin');
 export function createAdminRouter(
   repo: Repository = new Repository(),
   orchestrator: Orchestrator = new Orchestrator(),
+  shopify: ShopifyService = new ShopifyService(),
 ): Router {
   const router = express.Router();
   router.use(createRateLimiter({ max: 100 }));
   router.use(express.json());
+
+  // Display the connected Shopify store details.
+  router.get('/store', async (_req: Request, res: Response) => {
+    try {
+      const store = await shopify.getShop();
+      res.json({ store });
+    } catch (error) {
+      log.error({ err: String(error) }, 'Failed to fetch store');
+      res.status(502).json({ error: 'failed to fetch store' });
+    }
+  });
 
   router.get('/products', (_req: Request, res: Response) => {
     res.json({ products: repo.listProductMappings() });

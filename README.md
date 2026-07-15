@@ -94,6 +94,7 @@ npm run typecheck    # tsc --noEmit
 | POST   | `/webhooks/shopify/orders/create`| Shopify order webhook (HMAC-verified) |
 | POST   | `/webhooks/shopify/products/update` | Shopify product webhook           |
 | POST   | `/webhooks/shopify/app/uninstalled` | App uninstall webhook             |
+| GET    | `/admin/store`                   | Display the connected Shopify store |
 | GET    | `/admin/products`                | List product mappings               |
 | GET    | `/admin/orders`                  | List orders                         |
 | GET    | `/admin/ai-content`              | List generated AI content           |

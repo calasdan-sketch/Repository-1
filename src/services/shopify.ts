@@ -29,6 +29,16 @@ export interface ShopifyProduct {
   variants: Array<{ id: number; sku: string | null; price: string }>;
 }
 
+export interface ShopifyShop {
+  id: number;
+  name: string;
+  email: string;
+  domain: string;
+  myshopifyDomain: string;
+  currency: string;
+  planName: string;
+}
+
 /**
  * Thin wrapper over the Shopify Admin REST API.
  *
@@ -84,6 +94,35 @@ export class ShopifyService {
       return false;
     }
     return timingSafeEqual(expected, received);
+  }
+
+  /**
+   * Fetch the Shopify store (shop) details for display.
+   */
+  async getShop(): Promise<ShopifyShop> {
+    log.info('Fetching Shopify shop details');
+    const response = await requestJson<{
+      shop: {
+        id: number;
+        name: string;
+        email: string;
+        domain: string;
+        myshopify_domain: string;
+        currency: string;
+        plan_name: string;
+      };
+    }>(`${this.baseUrl()}/shop.json`, { headers: this.headers() });
+
+    const { shop } = response;
+    return {
+      id: shop.id,
+      name: shop.name,
+      email: shop.email,
+      domain: shop.domain,
+      myshopifyDomain: shop.myshopify_domain,
+      currency: shop.currency,
+      planName: shop.plan_name,
+    };
   }
 
   async createProduct(input: ShopifyProductInput): Promise<ShopifyProduct> {
