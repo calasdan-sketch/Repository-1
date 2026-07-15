@@ -1,6 +1,7 @@
 import express, { type Router, type Request, type Response } from 'express';
 import { createLogger } from '../lib/logger.js';
 import { VerificationError } from '../lib/errors.js';
+import { createRateLimiter } from '../lib/rate-limit.js';
 import { ShopifyService } from '../services/shopify.js';
 import { Orchestrator } from '../jobs/orchestrator.js';
 
@@ -18,6 +19,8 @@ export function createWebhookRouter(
 ): Router {
   const router = express.Router();
 
+  // Webhooks are internet-facing; limit request rate to mitigate abuse.
+  router.use(createRateLimiter({ max: 120 }));
   router.use(express.raw({ type: 'application/json' }));
 
   function verify(req: Request): Record<string, unknown> {

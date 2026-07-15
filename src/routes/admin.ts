@@ -1,5 +1,6 @@
 import express, { type Router, type Request, type Response } from 'express';
 import { createLogger } from '../lib/logger.js';
+import { createRateLimiter } from '../lib/rate-limit.js';
 import { Repository } from '../models/repository.js';
 import { Orchestrator } from '../jobs/orchestrator.js';
 
@@ -16,6 +17,7 @@ export function createAdminRouter(
   orchestrator: Orchestrator = new Orchestrator(),
 ): Router {
   const router = express.Router();
+  router.use(createRateLimiter({ max: 100 }));
   router.use(express.json());
 
   router.get('/products', (_req: Request, res: Response) => {
