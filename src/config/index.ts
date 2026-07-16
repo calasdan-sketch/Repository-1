@@ -46,6 +46,13 @@ const configSchema = z.object({
     autoFulfill: z.boolean(),
     syncCron: z.string().default('*/30 * * * *'),
   }),
+
+  approvals: z.object({
+    /** Where approval-request emails are sent (the business owner). */
+    ownerEmail: z.string().default(''),
+    /** From address used on outbound approval notifications. */
+    fromEmail: z.string().default('command-center@localhost'),
+  }),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;
@@ -87,6 +94,10 @@ export function loadConfig(): AppConfig {
       autoPublish: booleanFromEnv.parse(process.env.AUTO_PUBLISH),
       autoFulfill: booleanFromEnv.parse(process.env.AUTO_FULFILL),
       syncCron: process.env.SYNC_CRON,
+    },
+    approvals: {
+      ownerEmail: process.env.OWNER_EMAIL,
+      fromEmail: process.env.APPROVALS_FROM_EMAIL,
     },
   });
 

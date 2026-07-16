@@ -53,6 +53,34 @@ CREATE TABLE IF NOT EXISTS ai_content (
 
 CREATE INDEX IF NOT EXISTS idx_ai_content_product
   ON ai_content (autods_product_id);
+
+CREATE TABLE IF NOT EXISTS commands (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  division_id TEXT NOT NULL,
+  instruction TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'issued',
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_commands_division
+  ON commands (division_id);
+
+CREATE TABLE IF NOT EXISTS approvals (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  division_id TEXT NOT NULL,
+  agent_id TEXT,
+  kind TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  amount REAL,
+  currency TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_approvals_status
+  ON approvals (status);
 `;
 
 /**

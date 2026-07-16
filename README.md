@@ -11,6 +11,12 @@ content and score products for viability.
 
 ## Features
 
+- **Command center (arcade UI)** — a visual "business as a videogame" map: you
+  sit at Headquarters in the centre with a branch building for each division
+  (Software Development, Error Correction/QA, Social Media, Marketing,
+  Operations). Issue orders to divisions, watch their agents, and approve
+  purchases / course-altering decisions. Open `http://localhost:3000/` after
+  starting the server.
 - **Shopify integration** — create/update products, manage inventory, read
   orders, create fulfillments, and verify inbound webhooks via HMAC.
 - **AutoDS integration** — source products, forward orders for fulfillment, and
@@ -36,11 +42,13 @@ Shopify  ──webhooks──▶  /webhooks/shopify ──▶  Orchestrator ─�
 | Layer            | Location            |
 | ---------------- | ------------------- |
 | Config (env)     | `src/config`        |
+| Domain (org map) | `src/domain`        |
 | Services         | `src/services`      |
 | HTTP routes      | `src/routes`        |
 | Jobs / workflows | `src/jobs`          |
 | Datastore        | `src/models`        |
 | Shared utilities | `src/lib`           |
+| Arcade UI        | `public`            |
 | Tests            | `tests`             |
 
 ## Requirements
@@ -74,6 +82,22 @@ Secrets are read from environment variables only and must never be committed.
 - `AUTO_FULFILL=false` — orders are recorded but not auto-forwarded to AutoDS.
 - `SYNC_CRON` — cron expression for the recurring tracking-sync job.
 
+### Command center
+
+Start the server and open `http://localhost:3000/` to see the arcade map. You
+(Headquarters) sit in the centre; each surrounding building is a division whose
+agents carry out that facet of the business. Click a building to inspect its
+agents and issue an order. When an agent proposes a **purchase** or a
+**course-altering decision**, it appears under *Pending approvals* and an email
+is sent to `OWNER_EMAIL` so you can approve or reject it.
+
+- `OWNER_EMAIL` — address that receives approval requests. When unset, requests
+  are still recorded (and visible in the UI) but no email is sent.
+- `APPROVALS_FROM_EMAIL` — the from address used on approval notifications.
+
+> The default notifier logs/records messages; wire a real SMTP or email provider
+> into `src/services/notifier.ts` to deliver mail in production.
+
 ## Scripts
 
 ```bash
@@ -91,6 +115,14 @@ npm run typecheck    # tsc --noEmit
 | Method | Path                             | Purpose                             |
 | ------ | -------------------------------- | ----------------------------------- |
 | GET    | `/health`                        | Liveness probe                      |
+| GET    | `/`                              | Arcade command-center UI            |
+| GET    | `/api/command-center/organization` | HQ + divisions + agents (org chart) |
+| GET    | `/api/command-center/divisions/:id` | A single division and its agents  |
+| GET    | `/api/command-center/commands`   | Orders issued from HQ               |
+| POST   | `/api/command-center/commands`   | Issue an order to a division        |
+| GET    | `/api/command-center/approvals`  | List approvals (optional `?status=`)|
+| POST   | `/api/command-center/approvals`  | Escalate a purchase / course change |
+| POST   | `/api/command-center/approvals/:id/decision` | Approve or reject an item |
 | POST   | `/webhooks/shopify/orders/create`| Shopify order webhook (HMAC-verified) |
 | POST   | `/webhooks/shopify/products/update` | Shopify product webhook           |
 | POST   | `/webhooks/shopify/app/uninstalled` | App uninstall webhook             |

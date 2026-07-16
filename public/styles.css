@@ -1,0 +1,258 @@
+:root {
+  --bg: #0b0f1f;
+  --bg-panel: #131a30;
+  --grid: #1d2846;
+  --ink: #e8ecff;
+  --muted: #8b96c4;
+  --accent: #ffd447;
+  --danger: #ef5350;
+  --ok: #66bb6a;
+  --font: "Courier New", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 50% 20%, #16203f 0%, var(--bg) 70%);
+  color: var(--ink);
+  font-family: var(--font);
+  min-height: 100vh;
+}
+
+.topbar {
+  padding: 16px 24px;
+  border-bottom: 2px solid var(--grid);
+  position: relative;
+}
+
+.topbar h1 {
+  margin: 0;
+  letter-spacing: 4px;
+  font-size: 26px;
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(255, 212, 71, 0.5);
+}
+
+.tagline {
+  margin: 6px 0 0;
+  color: var(--muted);
+  max-width: 720px;
+  font-size: 13px;
+}
+
+.badge {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.badge--online {
+  background: rgba(102, 187, 106, 0.2);
+  color: var(--ok);
+  border: 1px solid var(--ok);
+}
+
+.badge--offline {
+  background: rgba(239, 83, 80, 0.15);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+.stage {
+  display: flex;
+  gap: 20px;
+  padding: 20px 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.map-wrap {
+  flex: 1 1 560px;
+  background: var(--bg-panel);
+  border: 2px solid var(--grid);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+#map {
+  width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: pixelated;
+  cursor: pointer;
+}
+
+.panel {
+  flex: 1 1 320px;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel__section {
+  background: var(--bg-panel);
+  border: 2px solid var(--grid);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.panel__section h2,
+.panel__section h3 {
+  margin: 0 0 8px;
+}
+
+.panel__section h2 {
+  color: var(--accent);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 12px;
+}
+
+.agent-list,
+.approval-list,
+.command-log {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agent-list li {
+  padding: 8px 10px;
+  border-left: 3px solid var(--grid);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.agent-list li strong {
+  display: block;
+}
+
+.agent-list li span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.field {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.field span {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+select,
+textarea {
+  width: 100%;
+  background: #0c1225;
+  color: var(--ink);
+  border: 1px solid var(--grid);
+  border-radius: 6px;
+  padding: 8px;
+  font-family: var(--font);
+  font-size: 14px;
+}
+
+button {
+  background: var(--accent);
+  color: #1a1500;
+  border: none;
+  border-radius: 6px;
+  padding: 9px 14px;
+  font-family: var(--font);
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.1);
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--grid);
+}
+
+button.ok {
+  background: var(--ok);
+  color: #06210a;
+}
+
+button.danger {
+  background: var(--danger);
+  color: #2a0605;
+}
+
+.status {
+  min-height: 16px;
+  font-size: 12px;
+  margin: 8px 0 0;
+}
+
+.status.ok {
+  color: var(--ok);
+}
+
+.status.err {
+  color: var(--danger);
+}
+
+.pill {
+  display: inline-block;
+  min-width: 20px;
+  text-align: center;
+  background: var(--danger);
+  color: #fff;
+  border-radius: 10px;
+  padding: 0 7px;
+  font-size: 12px;
+}
+
+.approval-list li {
+  border: 1px solid var(--grid);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.approval-list .approval-meta {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 4px 0 8px;
+}
+
+.approval-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.command-log li {
+  font-size: 12px;
+  color: var(--muted);
+  border-bottom: 1px dashed var(--grid);
+  padding-bottom: 6px;
+}
+
+.command-log li b {
+  color: var(--ink);
+}

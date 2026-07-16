@@ -26,6 +26,10 @@ export function makeTestConfig(overrides: Partial<AppConfig> = {}): AppConfig {
       autoFulfill: false,
       syncCron: '* * * * *',
     },
+    approvals: {
+      ownerEmail: 'owner@example.com',
+      fromEmail: 'command-center@example.com',
+    },
     ...overrides,
   };
 }

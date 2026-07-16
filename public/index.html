@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Command Center — Arcade HQ</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>🕹️ COMMAND CENTER</h1>
+      <p class="tagline">
+        You are at Headquarters. Issue orders to the surrounding divisions —
+        purchases &amp; course-altering decisions come back to you for approval.
+      </p>
+      <div id="connection" class="badge badge--offline">offline</div>
+    </header>
+
+    <main class="stage">
+      <section class="map-wrap">
+        <canvas id="map" width="900" height="640" aria-label="Arcade map of headquarters and division buildings"></canvas>
+      </section>
+
+      <aside class="panel">
+        <div class="panel__section">
+          <h2 id="selection-title">Headquarters</h2>
+          <p id="selection-mission" class="muted">
+            Select a building on the map to inspect its agents and issue orders.
+          </p>
+          <ul id="agent-list" class="agent-list"></ul>
+        </div>
+
+        <div class="panel__section" id="order-box">
+          <h3>Issue an order</h3>
+          <label class="field">
+            <span>Division</span>
+            <select id="order-division"></select>
+          </label>
+          <label class="field">
+            <span>Instruction</span>
+            <textarea id="order-instruction" rows="3" placeholder="e.g. Launch a summer promo campaign"></textarea>
+          </label>
+          <button id="order-send" type="button">Send order ▶</button>
+          <p id="order-status" class="status" role="status"></p>
+        </div>
+
+        <div class="panel__section">
+          <h3>Pending approvals <span id="approval-count" class="pill">0</span></h3>
+          <p class="muted small">
+            Purchases and course-altering decisions await your sign-off. You are
+            also emailed when a new one arrives.
+          </p>
+          <ul id="approval-list" class="approval-list"></ul>
+        </div>
+
+        <div class="panel__section">
+          <h3>Recent orders</h3>
+          <ul id="command-log" class="command-log"></ul>
+        </div>
+      </aside>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

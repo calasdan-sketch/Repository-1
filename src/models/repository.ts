@@ -35,6 +35,31 @@ export interface AiContentRecord {
   created_at: string;
 }
 
+export interface CommandRecord {
+  id: number;
+  division_id: string;
+  instruction: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Kinds of decision an agent can escalate for the owner to approve. */
+export type ApprovalKind = 'purchase' | 'course_change';
+
+export interface ApprovalRecord {
+  id: number;
+  division_id: string;
+  agent_id: string | null;
+  kind: string;
+  summary: string;
+  amount: number | null;
+  currency: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
 /**
  * Data-access layer over the SQLite datastore.
  *
@@ -210,5 +235,99 @@ export class Repository {
     return this.db
       .prepare('SELECT * FROM ai_content ORDER BY id DESC')
       .all() as AiContentRecord[];
+  }
+
+  // ---- Commands (orders issued from HQ to a division) ----
+
+  insertCommand(input: {
+    divisionId: string;
+    instruction: string;
+    status?: string;
+  }): CommandRecord {
+    const result = this.db
+      .prepare(
+        `INSERT INTO commands (division_id, instruction, status)
+         VALUES (@divisionId, @instruction, @status)`,
+      )
+      .run({
+        divisionId: input.divisionId,
+        instruction: input.instruction,
+        status: input.status ?? 'issued',
+      });
+
+    return this.db
+      .prepare('SELECT * FROM commands WHERE id = ?')
+      .get(result.lastInsertRowid) as CommandRecord;
+  }
+
+  updateCommandStatus(id: number, status: string): void {
+    this.db
+      .prepare(
+        `UPDATE commands SET status = ?, updated_at = datetime('now') WHERE id = ?`,
+      )
+      .run(status, id);
+  }
+
+  listCommands(): CommandRecord[] {
+    return this.db
+      .prepare('SELECT * FROM commands ORDER BY id DESC')
+      .all() as CommandRecord[];
+  }
+
+  // ---- Approvals (human-in-the-loop for purchases / course changes) ----
+
+  insertApproval(input: {
+    divisionId: string;
+    agentId?: string | null;
+    kind: ApprovalKind;
+    summary: string;
+    amount?: number | null;
+    currency?: string | null;
+    status?: string;
+  }): ApprovalRecord {
+    const result = this.db
+      .prepare(
+        `INSERT INTO approvals
+           (division_id, agent_id, kind, summary, amount, currency, status)
+         VALUES (@divisionId, @agentId, @kind, @summary, @amount, @currency, @status)`,
+      )
+      .run({
+        divisionId: input.divisionId,
+        agentId: input.agentId ?? null,
+        kind: input.kind,
+        summary: input.summary,
+        amount: input.amount ?? null,
+        currency: input.currency ?? null,
+        status: input.status ?? 'pending',
+      });
+
+    return this.db
+      .prepare('SELECT * FROM approvals WHERE id = ?')
+      .get(result.lastInsertRowid) as ApprovalRecord;
+  }
+
+  getApproval(id: number): ApprovalRecord | undefined {
+    return this.db.prepare('SELECT * FROM approvals WHERE id = ?').get(id) as
+      ApprovalRecord | undefined;
+  }
+
+  updateApprovalStatus(id: number, status: string): ApprovalRecord | undefined {
+    this.db
+      .prepare(
+        `UPDATE approvals SET status = ?, updated_at = datetime('now') WHERE id = ?`,
+      )
+      .run(status, id);
+    return this.getApproval(id);
+  }
+
+  listApprovals(status?: string): ApprovalRecord[] {
+    if (status) {
+      return this.db
+        .prepare('SELECT * FROM approvals WHERE status = ? ORDER BY id DESC')
+        .all(status) as ApprovalRecord[];
+    }
+    return this.db
+      .prepare('SELECT * FROM approvals ORDER BY id DESC')
+      .all() as ApprovalRecord[];
   }
 }
