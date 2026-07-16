@@ -55,6 +55,20 @@ const configSchema = z.object({
     gmailAppPassword: z.string().default(''),
     recipientEmail: z.string().default(''),
   }),
+
+  warRoom: z.object({
+    reportToken: z.string().default(''),
+    retireAfterMs: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(10 * 60_000),
+    staleAfterMs: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(45 * 60_000),
+  }),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;
@@ -104,6 +118,11 @@ export function loadConfig(): AppConfig {
       gmailUser: process.env.GMAIL_USER,
       gmailAppPassword: process.env.GMAIL_APP_PASSWORD,
       recipientEmail: process.env.STOCK_ALERT_RECIPIENT_EMAIL,
+    },
+    warRoom: {
+      reportToken: process.env.WAR_ROOM_REPORT_TOKEN,
+      retireAfterMs: process.env.WAR_ROOM_RETIRE_AFTER_MS,
+      staleAfterMs: process.env.WAR_ROOM_STALE_AFTER_MS,
     },
   });
 

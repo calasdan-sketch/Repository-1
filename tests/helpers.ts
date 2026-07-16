@@ -34,6 +34,11 @@ export function makeTestConfig(overrides: Partial<AppConfig> = {}): AppConfig {
       gmailAppPassword: 'app-password',
       recipientEmail: 'me@example.com',
     },
+    warRoom: {
+      reportToken: 'war-room-token',
+      retireAfterMs: 10 * 60_000,
+      staleAfterMs: 45 * 60_000,
+    },
     ...overrides,
   };
 }

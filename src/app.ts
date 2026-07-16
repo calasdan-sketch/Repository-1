@@ -1,6 +1,7 @@
 import express, { type Express, type Request, type Response } from 'express';
 import { createWebhookRouter } from './routes/webhooks.js';
 import { createAdminRouter } from './routes/admin.js';
+import { createWarRoomRouter } from './routes/warRoom.js';
 
 /**
  * Assemble the Express application.
@@ -17,6 +18,7 @@ export function createApp(): Express {
 
   app.use('/webhooks/shopify', createWebhookRouter());
   app.use('/admin', createAdminRouter());
+  app.use('/war-room', createWarRoomRouter());
 
   return app;
 }
