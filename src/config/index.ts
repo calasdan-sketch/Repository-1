@@ -56,7 +56,7 @@ const configSchema = z.object({
     recipientEmail: z.string().default(''),
   }),
 
-  warRoom: z.object({
+  virtualOffice: z.object({
     reportToken: z.string().default(''),
     retireAfterMs: z.coerce
       .number()
@@ -119,10 +119,10 @@ export function loadConfig(): AppConfig {
       gmailAppPassword: process.env.GMAIL_APP_PASSWORD,
       recipientEmail: process.env.STOCK_ALERT_RECIPIENT_EMAIL,
     },
-    warRoom: {
-      reportToken: process.env.WAR_ROOM_REPORT_TOKEN,
-      retireAfterMs: process.env.WAR_ROOM_RETIRE_AFTER_MS,
-      staleAfterMs: process.env.WAR_ROOM_STALE_AFTER_MS,
+    virtualOffice: {
+      reportToken: process.env.VIRTUAL_OFFICE_REPORT_TOKEN,
+      retireAfterMs: process.env.VIRTUAL_OFFICE_RETIRE_AFTER_MS,
+      staleAfterMs: process.env.VIRTUAL_OFFICE_STALE_AFTER_MS,
     },
   });
 

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { AgentBus } from '../src/warRoom/agentBus.js';
+import { AgentBus } from '../src/virtualOffice/agentBus.js';
 
 describe('AgentBus', () => {
   let bus: AgentBus;
@@ -52,13 +52,13 @@ describe('AgentBus', () => {
     bus.applyEvent({ id: 'a1', type: 'spawn', name: 'Recon-1' });
     const done = bus.applyEvent({ id: 'a1', type: 'complete' });
     expect(done.status).toBe('done');
-    expect(done.action).toBe('Mission complete');
+    expect(done.action).toBe('Task complete');
 
     bus = new AgentBus();
     bus.applyEvent({ id: 'a2', type: 'spawn', name: 'Recon-2' });
     const errored = bus.applyEvent({ id: 'a2', type: 'error' });
     expect(errored.status).toBe('error');
-    expect(errored.action).toBe('Mission failed');
+    expect(errored.action).toBe('Task failed');
   });
 
   it('ignores further events against a terminal agent', () => {
@@ -69,7 +69,7 @@ describe('AgentBus', () => {
 
     const agent = bus.snapshot()[0];
     expect(agent.status).toBe('done');
-    expect(agent.action).toBe('Mission complete');
+    expect(agent.action).toBe('Task complete');
   });
 
   it('auto-vivifies on a status event for an unknown id', () => {
@@ -111,6 +111,6 @@ describe('AgentBus', () => {
     bus.sweep(Date.now() + 1500);
     const agent = bus.snapshot()[0];
     expect(agent.status).toBe('error');
-    expect(agent.action).toBe('Lost contact — no updates received');
+    expect(agent.action).toBe('No status update received');
   });
 });

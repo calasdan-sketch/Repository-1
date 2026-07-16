@@ -3,11 +3,11 @@ import express, { type Router, type Request, type Response } from 'express';
 import { loadConfig } from '../config/index.js';
 import { createLogger } from '../lib/logger.js';
 import { createRateLimiter } from '../lib/rate-limit.js';
-import { AgentBus } from '../warRoom/agentBus.js';
-import { renderDashboardHtml } from '../warRoom/dashboardHtml.js';
-import { agentEventSchema, type AgentState } from '../warRoom/types.js';
+import { AgentBus } from '../virtualOffice/agentBus.js';
+import { renderDashboardHtml } from '../virtualOffice/dashboardHtml.js';
+import { agentEventSchema, type AgentState } from '../virtualOffice/types.js';
 
-const log = createLogger('war-room');
+const log = createLogger('virtual-office');
 
 function safeTokenMatch(expected: string, received: string): boolean {
   const a = Buffer.from(expected);
@@ -23,7 +23,7 @@ function writeSseEvent(res: Response, event: string, data: unknown): void {
 }
 
 /**
- * Build the War Room router: a live dashboard visualising Claude Code
+ * Build the Virtual Office router: a live dashboard visualising Claude Code
  * subagents as they're reported to `POST /report` by the outer agent.
  *
  * Read endpoints (`/`, `/agents`, `/events`) are intentionally
@@ -31,9 +31,9 @@ function writeSseEvent(res: Response, event: string, data: unknown): void {
  * headers, so bearer-token auth can only gate the write endpoint. This
  * mirrors the existing `/admin/*` routes, which also have no read auth.
  */
-export function createWarRoomRouter(
-  bus: AgentBus = new AgentBus(loadConfig().warRoom),
-  reportToken: string = loadConfig().warRoom.reportToken,
+export function createVirtualOfficeRouter(
+  bus: AgentBus = new AgentBus(loadConfig().virtualOffice),
+  reportToken: string = loadConfig().virtualOffice.reportToken,
 ): Router {
   const router = express.Router();
   router.use(createRateLimiter({ max: 100 }));
@@ -82,7 +82,9 @@ export function createWarRoomRouter(
     createRateLimiter({ max: 300 }),
     (req: Request, res: Response) => {
       if (!reportToken) {
-        res.status(503).json({ error: 'war room reporting not configured' });
+        res
+          .status(503)
+          .json({ error: 'virtual office reporting not configured' });
         return;
       }
 
@@ -106,7 +108,7 @@ export function createWarRoomRouter(
       const agent = bus.applyEvent(parsed.data);
       log.info(
         { id: agent.id, type: parsed.data.type, status: agent.status },
-        'Applied war room event',
+        'Applied virtual office event',
       );
       res.status(202).json({ ok: true, agent });
     },

@@ -146,63 +146,63 @@ npm run stock-alert        # loops on STOCK_ALERT_CRON until stopped (Ctrl+C)
   supervisor (pm2, systemd, a Docker container, etc.) or a system cron job
   that calls `npm run stock-alert:once` on the interval you want instead.
 
-## War Room (live subagent dashboard)
+## Virtual Office (live agent activity dashboard)
 
-A military-themed, real-time dashboard at `/war-room` that shows Claude Code
-subagents as soldiers on a battlefield — spawning, working, and retiring as
-they complete their orders.
+A real-time dashboard at `/virtual-office` that shows Claude Code subagents
+as employees at their desks — onboarding, active on a task, completed, or
+needing attention.
 
 **Important limitation:** this server has no way to observe subagent
 activity automatically. It only shows what gets actively reported to it via
 the HTTP API below. In practice that means an outer Claude Code agent (or
 any script) has to `curl` a `spawn` event when it starts a subagent, `status`
 events as it progresses, and a `complete`/`error` event when it finishes.
-If nothing reports in, the board just stays empty — that's expected, not a
+If nothing reports in, the office just stays empty — that's expected, not a
 bug.
 
 ### Setup
 
 ```bash
 # Generate a token; reporting is disabled (503) until this is set.
-WAR_ROOM_REPORT_TOKEN=$(openssl rand -hex 32)
+VIRTUAL_OFFICE_REPORT_TOKEN=$(openssl rand -hex 32)
 ```
 
-Add it to `.env`, then open `http://localhost:3000/war-room` (or wherever
-the server is running) while `npm run dev`/`npm start` is up. The read
-endpoints (`/war-room/`, `/war-room/agents`, `/war-room/events`) are
-unauthenticated — browsers can't send custom headers over `EventSource`, so
-this mirrors the existing `/admin/*` routes' lack of read auth. Only
-reporting requires the token.
+Add it to `.env`, then open `http://localhost:3000/virtual-office` (or
+wherever the server is running) while `npm run dev`/`npm start` is up. The
+read endpoints (`/virtual-office/`, `/virtual-office/agents`,
+`/virtual-office/events`) are unauthenticated — browsers can't send custom
+headers over `EventSource`, so this mirrors the existing `/admin/*` routes'
+lack of read auth. Only reporting requires the token.
 
 ### Reporter contract
 
 ```
-POST /war-room/report
-Authorization: Bearer $WAR_ROOM_REPORT_TOKEN
+POST /virtual-office/report
+Authorization: Bearer $VIRTUAL_OFFICE_REPORT_TOKEN
 Content-Type: application/json
 ```
 
 | type | required fields | notes |
 | --- | --- | --- |
 | `spawn` | `id`, `type`, `name` | `role`, `action` optional |
-| `status` | `id`, `type`, `action` | updates the "orders" line |
-| `complete` | `id`, `type` | `action` defaults to "Mission complete" |
-| `error` | `id`, `type` | `action` defaults to "Mission failed" |
+| `status` | `id`, `type`, `action` | updates the current-task line |
+| `complete` | `id`, `type` | `action` defaults to "Task complete" |
+| `error` | `id`, `type` | `action` defaults to "Task failed" |
 
 ```bash
-curl -sS -X POST http://localhost:3000/war-room/report \
-  -H "Authorization: Bearer $WAR_ROOM_REPORT_TOKEN" \
+curl -sS -X POST http://localhost:3000/virtual-office/report \
+  -H "Authorization: Bearer $VIRTUAL_OFFICE_REPORT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"id":"sub-1721150000-explore","type":"spawn","name":"Recon-1","role":"explore","action":"Mapping the codebase"}'
 ```
 
 Use a stable `id` per subagent invocation (e.g. `sub-<timestamp>-<slug>`),
 and always send a terminal `complete`/`error` event when it finishes —
-agents that never report a terminal event are auto-marked "lost contact"
-after `WAR_ROOM_STALE_AFTER_MS` (default 45 min) as a safety net, not a
-substitute for reporting properly. Finished agents disappear from the board
-after `WAR_ROOM_RETIRE_AFTER_MS` (default 10 min). All state is in-memory
-and resets on restart — this is a live-ops view, not a history log.
+agents that never report a terminal event are auto-marked "needs attention"
+after `VIRTUAL_OFFICE_STALE_AFTER_MS` (default 45 min) as a safety net, not
+a substitute for reporting properly. Finished agents disappear from the
+board after `VIRTUAL_OFFICE_RETIRE_AFTER_MS` (default 10 min). All state is
+in-memory and resets on restart — this is a live-ops view, not a history log.
 
 ## Docker
 

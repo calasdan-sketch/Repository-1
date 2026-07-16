@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import { createLogger } from '../lib/logger.js';
 import type { AgentEventPayload, AgentState } from './types.js';
 
-const log = createLogger('war-room');
+const log = createLogger('virtual-office');
 
 const HISTORY_LIMIT = 5;
 const DEFAULT_RETIRE_AFTER_MS = 10 * 60_000;
@@ -13,7 +13,7 @@ function isTerminal(status: AgentState['status']): boolean {
 }
 
 /**
- * In-memory hub of "War Room" agent state.
+ * In-memory hub of Virtual Office agent state.
  *
  * Applies lifecycle events reported by the outer Claude Code agent, keeps a
  * live snapshot per agent id, and emits `'agent'` (upsert) / `'remove'`
@@ -74,10 +74,10 @@ export class AgentBus extends EventEmitter {
     const action =
       payload.action ??
       (payload.type === 'complete'
-        ? 'Mission complete'
+        ? 'Task complete'
         : payload.type === 'error'
-          ? 'Mission failed'
-          : (existing?.action ?? 'Awaiting orders'));
+          ? 'Task failed'
+          : (existing?.action ?? 'Awaiting assignment'));
 
     const history = [...(existing?.history ?? []), action].slice(
       -HISTORY_LIMIT,
@@ -123,11 +123,10 @@ export class AgentBus extends EventEmitter {
         const stale: AgentState = {
           ...agent,
           status: 'error',
-          action: 'Lost contact — no updates received',
-          history: [
-            ...agent.history,
-            'Lost contact — no updates received',
-          ].slice(-HISTORY_LIMIT),
+          action: 'No status update received',
+          history: [...agent.history, 'No status update received'].slice(
+            -HISTORY_LIMIT,
+          ),
           updatedAt: now,
         };
         this.agents.set(agent.id, stale);

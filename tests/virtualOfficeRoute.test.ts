@@ -1,12 +1,12 @@
 import express from 'express';
 import type { Server } from 'node:http';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createWarRoomRouter } from '../src/routes/warRoom.js';
-import { AgentBus } from '../src/warRoom/agentBus.js';
+import { createVirtualOfficeRouter } from '../src/routes/virtualOffice.js';
+import { AgentBus } from '../src/virtualOffice/agentBus.js';
 
 const TOKEN = 'test-token';
 
-describe('War Room router', () => {
+describe('Virtual Office router', () => {
   let server: Server;
   let baseUrl: string;
   let bus: AgentBus;
@@ -14,13 +14,13 @@ describe('War Room router', () => {
   async function start(token: string): Promise<void> {
     bus = new AgentBus();
     const app = express();
-    app.use('/war-room', createWarRoomRouter(bus, token));
+    app.use('/virtual-office', createVirtualOfficeRouter(bus, token));
     await new Promise<void>((resolve) => {
       server = app.listen(0, resolve);
     });
     const address = server.address();
     const port = typeof address === 'object' && address ? address.port : 0;
-    baseUrl = `http://127.0.0.1:${port}/war-room`;
+    baseUrl = `http://127.0.0.1:${port}/virtual-office`;
   }
 
   afterEach(async () => {
@@ -36,7 +36,7 @@ describe('War Room router', () => {
       expect(res.status).toBe(200);
       expect(res.headers.get('content-type')).toContain('text/html');
       const body = await res.text();
-      expect(body).toContain('War Room');
+      expect(body).toContain('Virtual Office');
     });
   });
 
