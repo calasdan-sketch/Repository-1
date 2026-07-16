@@ -26,6 +26,14 @@ export function makeTestConfig(overrides: Partial<AppConfig> = {}): AppConfig {
       autoFulfill: false,
       syncCron: '* * * * *',
     },
+    stockAlert: {
+      ticker: 'JEPQ',
+      sellPrice: 31,
+      checkCron: '* * * * *',
+      gmailUser: 'sender@gmail.com',
+      gmailAppPassword: 'app-password',
+      recipientEmail: 'me@example.com',
+    },
     ...overrides,
   };
 }

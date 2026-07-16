@@ -53,6 +53,14 @@ CREATE TABLE IF NOT EXISTS ai_content (
 
 CREATE INDEX IF NOT EXISTS idx_ai_content_product
   ON ai_content (autods_product_id);
+
+CREATE TABLE IF NOT EXISTS stock_alert_state (
+  ticker TEXT PRIMARY KEY,
+  armed INTEGER NOT NULL DEFAULT 1,
+  last_price REAL,
+  last_checked_at TEXT,
+  last_alert_at TEXT
+);
 `;
 
 /**

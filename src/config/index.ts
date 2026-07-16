@@ -46,6 +46,15 @@ const configSchema = z.object({
     autoFulfill: z.boolean(),
     syncCron: z.string().default('*/30 * * * *'),
   }),
+
+  stockAlert: z.object({
+    ticker: z.string().default('JEPQ'),
+    sellPrice: z.coerce.number().positive().default(31),
+    checkCron: z.string().default('*/15 * * * *'),
+    gmailUser: z.string().default(''),
+    gmailAppPassword: z.string().default(''),
+    recipientEmail: z.string().default(''),
+  }),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;
@@ -87,6 +96,14 @@ export function loadConfig(): AppConfig {
       autoPublish: booleanFromEnv.parse(process.env.AUTO_PUBLISH),
       autoFulfill: booleanFromEnv.parse(process.env.AUTO_FULFILL),
       syncCron: process.env.SYNC_CRON,
+    },
+    stockAlert: {
+      ticker: process.env.STOCK_ALERT_TICKER,
+      sellPrice: process.env.STOCK_ALERT_SELL_PRICE,
+      checkCron: process.env.STOCK_ALERT_CRON,
+      gmailUser: process.env.GMAIL_USER,
+      gmailAppPassword: process.env.GMAIL_APP_PASSWORD,
+      recipientEmail: process.env.STOCK_ALERT_RECIPIENT_EMAIL,
     },
   });
 

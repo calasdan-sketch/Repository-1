@@ -101,6 +101,51 @@ npm run typecheck    # tsc --noEmit
 | POST   | `/admin/products/import`         | Import + generate content for a product |
 | POST   | `/admin/ai-content/:id/approve`  | Approve staged AI content           |
 
+## Stock sell-price alert (Gmail)
+
+A small, self-contained watcher that emails you through Gmail the moment a
+ticker (default `JEPQ`) hits a price you want to sell at (default `$31`). It
+runs independently of the Shopify/AutoDS server — start it as its own
+process.
+
+### Setup
+
+1. Generate a Gmail **app password** (not your normal password): Google
+   Account → Security → 2-Step Verification → App passwords →
+   https://myaccount.google.com/apppasswords
+2. In `.env`, set:
+
+   ```bash
+   STOCK_ALERT_TICKER=JEPQ
+   STOCK_ALERT_SELL_PRICE=31
+   STOCK_ALERT_CRON=*/15 * * * *   # how often to check during market hours
+   GMAIL_USER=you@gmail.com
+   GMAIL_APP_PASSWORD=xxxxxxxxxxxxxxxx
+   STOCK_ALERT_RECIPIENT_EMAIL=you@gmail.com   # defaults to GMAIL_USER
+   ```
+
+### Run
+
+```bash
+npm run stock-alert:once   # single check now — good for verifying setup
+npm run stock-alert        # loops on STOCK_ALERT_CRON until stopped (Ctrl+C)
+```
+
+### Behaviour
+
+- Checks the price only during regular US market hours
+  (9:30am–4:00pm America/New_York, weekdays).
+- Fetches the current price from Yahoo Finance's public quote endpoint (no
+  API key required).
+- Sends **one** email the moment the price first reaches the sell target,
+  then stays quiet while the price remains at or above it — no repeat spam.
+  If the price dips back below the target and later crosses again, you'll
+  get a fresh alert. State is persisted in the same SQLite database
+  (`stock_alert_state` table).
+- To watch it continuously, run `npm run stock-alert` under a process
+  supervisor (pm2, systemd, a Docker container, etc.) or a system cron job
+  that calls `npm run stock-alert:once` on the interval you want instead.
+
 ## Docker
 
 ```bash
