@@ -22,6 +22,8 @@ content and score products for viability.
 - **Scheduler** — recurring tracking-sync job (cron).
 - **Admin API** — inspect mappings/orders/AI content, trigger imports, and
   approve staged content.
+- **System plan endpoint** — expose a machine-readable three-repository business
+  operating plan for future agents and maintainers.
 
 ## Architecture
 
@@ -98,8 +100,24 @@ npm run typecheck    # tsc --noEmit
 | GET    | `/admin/products`                | List product mappings               |
 | GET    | `/admin/orders`                  | List orders                         |
 | GET    | `/admin/ai-content`              | List generated AI content           |
+| GET    | `/admin/system-plan`             | Inspect the multi-repo operating plan |
 | POST   | `/admin/products/import`         | Import + generate content for a product |
 | POST   | `/admin/ai-content/:id/approve`  | Approve staged AI content           |
+
+## Three-repository operating model
+
+This repository is part of a larger agent-assisted business system spanning
+three repositories in the `calasdan-sketch` account:
+
+| Repository | Intended role |
+| ---------- | ------------- |
+| `calasdan-sketch/Repository-1` | Private operations control plane for sourcing, merchandising, fulfillment, and human review |
+| `calasdan-sketch/repository1` | Public AI gateway/product surface used for external adoption and AI provider access |
+| `calasdan-sketch/new-repository-` | Public business-ops hub for shared templates, onboarding, and lightweight runbooks |
+
+The admin endpoint `GET /admin/system-plan` returns this split as JSON so future
+agents can discover the intended handoffs programmatically before making
+changes.
 
 ## Docker
 
