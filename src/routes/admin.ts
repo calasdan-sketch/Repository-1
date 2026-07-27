@@ -4,6 +4,7 @@ import { createRateLimiter } from '../lib/rate-limit.js';
 import { Repository } from '../models/repository.js';
 import { Orchestrator } from '../jobs/orchestrator.js';
 import { ShopifyService } from '../services/shopify.js';
+import { businessPlan } from '../system/business-plan.js';
 
 const log = createLogger('admin');
 
@@ -43,6 +44,10 @@ export function createAdminRouter(
 
   router.get('/ai-content', (_req: Request, res: Response) => {
     res.json({ content: repo.listAiContent() });
+  });
+
+  router.get('/system-plan', (_req: Request, res: Response) => {
+    res.json({ plan: businessPlan });
   });
 
   // Trigger sourcing + content generation for a specific AutoDS product.
