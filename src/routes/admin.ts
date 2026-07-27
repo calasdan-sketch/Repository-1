@@ -4,6 +4,7 @@ import { createRateLimiter } from '../lib/rate-limit.js';
 import { Repository } from '../models/repository.js';
 import { Orchestrator } from '../jobs/orchestrator.js';
 import { ShopifyService } from '../services/shopify.js';
+import { CustomerServiceAgent } from '../services/customer-service.js';
 import { businessPlan } from '../system/business-plan.js';
 
 const log = createLogger('admin');
@@ -18,6 +19,7 @@ export function createAdminRouter(
   repo: Repository = new Repository(),
   orchestrator: Orchestrator = new Orchestrator(),
   shopify: ShopifyService = new ShopifyService(),
+  customerService: CustomerServiceAgent = new CustomerServiceAgent({ repo }),
 ): Router {
   const router = express.Router();
   router.use(createRateLimiter({ max: 100 }));
@@ -77,6 +79,29 @@ export function createAdminRouter(
     }
     repo.updateAiContentStatus(id, 'approved');
     res.json({ id, status: 'approved' });
+  });
+
+  // Draft an AI customer-service reply to an inbound inquiry (staged for
+  // human review before sending).
+  router.post('/support/reply', async (req: Request, res: Response) => {
+    const { message, shopifyOrderId } = req.body ?? {};
+    if (typeof message !== 'string' || message.trim() === '') {
+      res.status(400).json({ error: 'message is required' });
+      return;
+    }
+    try {
+      const result = await customerService.respondToInquiry({
+        message,
+        shopifyOrderId:
+          shopifyOrderId === undefined || shopifyOrderId === null
+            ? undefined
+            : String(shopifyOrderId),
+      });
+      res.json(result);
+    } catch (error) {
+      log.error({ err: String(error) }, 'Support reply failed');
+      res.status(502).json({ error: 'support reply failed' });
+    }
   });
 
   return router;

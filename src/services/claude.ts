@@ -21,6 +21,12 @@ export interface ProductScore {
   rationale: string;
 }
 
+export interface SupportReply {
+  reply: string;
+  inputTokens: number;
+  outputTokens: number;
+}
+
 /**
  * Minimal shape of the Anthropic client we depend on, so it can be swapped for
  * a fake in tests without pulling in the real SDK.
@@ -210,5 +216,57 @@ export class ClaudeService {
     const parsed = parseJsonLoose<ProductScore>(text);
     parsed.score = Math.max(0, Math.min(100, Number(parsed.score) || 0));
     return parsed;
+  }
+
+  /**
+   * Draft a customer-service reply to an inbound inquiry.
+   *
+   * The reply is grounded on any order context supplied by the caller (e.g.
+   * fulfillment status and tracking number) so the agent never invents order
+   * details. Drafts are persisted as `support_reply` AI content with `draft`
+   * status so a human can review before it is sent to the customer.
+   */
+  async draftSupportReply(input: {
+    message: string;
+    orderContext?: string;
+  }): Promise<SupportReply> {
+    const system =
+      'You are a helpful, empathetic e-commerce customer service agent. ' +
+      'Write a concise, friendly reply to the customer. Only state order ' +
+      'facts that are provided in the order context; never invent tracking ' +
+      'numbers, dates, or statuses. If information is missing, say it will be ' +
+      'looked into and, when appropriate, ask a clarifying question. Respond ' +
+      'with the reply text only, no preamble.';
+
+    const userPrompt = [
+      input.orderContext
+        ? `Order context:\n${input.orderContext}`
+        : 'No order context is available.',
+      '',
+      `Customer message:\n${input.message}`,
+    ].join('\n');
+
+    const { text, inputTokens, outputTokens } = await this.complete(
+      system,
+      userPrompt,
+    );
+
+    const reply = text.trim();
+    if (!reply) {
+      throw new Error('Generated support reply was empty');
+    }
+
+    this.repo.insertAiContent({
+      autodsProductId: null,
+      contentType: 'support_reply',
+      promptHash: hashPrompt(`support:${this.config.model}:${userPrompt}`),
+      content: reply,
+      status: 'draft',
+      inputTokens,
+      outputTokens,
+    });
+
+    log.info({ inputTokens, outputTokens }, 'Drafted support reply');
+    return { reply, inputTokens, outputTokens };
   }
 }

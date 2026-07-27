@@ -17,6 +17,8 @@ content and score products for viability.
   poll for tracking numbers.
 - **Claude AI** — generate SEO titles/descriptions/bullets/tags and score
   candidate products, with prompt-hash caching and token accounting.
+- **Customer service agent** — draft empathetic, order-grounded replies to
+  customer inquiries, staged for human review before sending.
 - **Orchestration** — end-to-end "source → generate → publish → fulfill → sync"
   flow with a **human-in-the-loop** toggle (`AUTO_PUBLISH` / `AUTO_FULFILL`).
 - **Scheduler** — recurring tracking-sync job (cron).
@@ -103,6 +105,7 @@ npm run typecheck    # tsc --noEmit
 | GET    | `/admin/system-plan`             | Inspect the multi-repo operating plan |
 | POST   | `/admin/products/import`         | Import + generate content for a product |
 | POST   | `/admin/ai-content/:id/approve`  | Approve staged AI content           |
+| POST   | `/admin/support/reply`           | Draft an AI customer-service reply  |
 
 ## Three-repository operating model
 
