@@ -64,4 +64,33 @@ describe('admin routes', () => {
     expect(body.plan).toEqual(businessPlan);
     expect(body.plan.repositories).toHaveLength(3);
   });
+
+  it('returns a consolidated omni operations snapshot', async () => {
+    const { repo, server, url } = await startAdminApp();
+    servers.push(server);
+
+    repo.upsertProductMapping({ autodsProductId: 'p-1' });
+    repo.upsertOrder({ shopifyOrderId: 'o-1' });
+    repo.insertAiContent({ contentType: 'title', content: 'Great product' });
+
+    const response = await fetch(`${url}/admin/omni`);
+    const body = (await response.json()) as {
+      omni: {
+        generatedAt: string;
+        counts: { products: number; orders: number; aiContent: number };
+        products: unknown[];
+        orders: unknown[];
+        aiContent: unknown[];
+        systemPlan: typeof businessPlan;
+      };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.omni.counts).toEqual({ products: 1, orders: 1, aiContent: 1 });
+    expect(body.omni.products).toHaveLength(1);
+    expect(body.omni.orders).toHaveLength(1);
+    expect(body.omni.aiContent).toHaveLength(1);
+    expect(body.omni.systemPlan).toEqual(businessPlan);
+    expect(typeof body.omni.generatedAt).toBe('string');
+  });
 });

@@ -50,6 +50,29 @@ export function createAdminRouter(
     res.json({ plan: businessPlan });
   });
 
+  // Consolidated ("omni") operations snapshot: one call returns the full
+  // datastore view plus the system plan so agents can read overall state
+  // without fanning out across the individual admin endpoints.
+  router.get('/omni', (_req: Request, res: Response) => {
+    const products = repo.listProductMappings();
+    const orders = repo.listOrders();
+    const aiContent = repo.listAiContent();
+    res.json({
+      omni: {
+        generatedAt: new Date().toISOString(),
+        counts: {
+          products: products.length,
+          orders: orders.length,
+          aiContent: aiContent.length,
+        },
+        products,
+        orders,
+        aiContent,
+        systemPlan: businessPlan,
+      },
+    });
+  });
+
   // Trigger sourcing + content generation for a specific AutoDS product.
   router.post('/products/import', async (req: Request, res: Response) => {
     const { autodsProductId } = req.body ?? {};

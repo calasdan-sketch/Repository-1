@@ -101,6 +101,7 @@ npm run typecheck    # tsc --noEmit
 | GET    | `/admin/orders`                  | List orders                         |
 | GET    | `/admin/ai-content`              | List generated AI content           |
 | GET    | `/admin/system-plan`             | Inspect the multi-repo operating plan |
+| GET    | `/admin/omni`                    | Consolidated operations snapshot (products, orders, AI content, counts + system plan) |
 | POST   | `/admin/products/import`         | Import + generate content for a product |
 | POST   | `/admin/ai-content/:id/approve`  | Approve staged AI content           |
 
