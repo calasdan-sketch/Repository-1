@@ -63,5 +63,61 @@ describe('admin routes', () => {
     expect(response.status).toBe(200);
     expect(body.plan).toEqual(businessPlan);
     expect(body.plan.repositories).toHaveLength(3);
+    expect(body.plan.developmentTeam.length).toBeGreaterThan(0);
+  });
+
+  it('adds and lists development team members', async () => {
+    const { server, url } = await startAdminApp();
+    servers.push(server);
+
+    const createResponse = await fetch(`${url}/admin/team`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Dan Calas',
+        email: 'dan@example.com',
+        role: 'Operations Lead',
+      }),
+    });
+    const created = (await createResponse.json()) as {
+      member: { id: number; email: string };
+    };
+    expect(createResponse.status).toBe(201);
+    expect(created.member.email).toBe('dan@example.com');
+
+    const listResponse = await fetch(`${url}/admin/team`);
+    const body = (await listResponse.json()) as { team: unknown[] };
+    expect(listResponse.status).toBe(200);
+    expect(body.team).toHaveLength(1);
+  });
+
+  it('rejects an incomplete team member payload', async () => {
+    const { server, url } = await startAdminApp();
+    servers.push(server);
+
+    const response = await fetch(`${url}/admin/team`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Missing Fields' }),
+    });
+    expect(response.status).toBe(400);
+  });
+
+  it('deactivates a development team member', async () => {
+    const { server, url, repo } = await startAdminApp();
+    servers.push(server);
+
+    const member = repo.addTeamMember({
+      name: 'Agent Claude',
+      email: 'agent@example.com',
+      role: 'Coding Agent',
+    });
+
+    const response = await fetch(`${url}/admin/team/${member.id}/deactivate`, {
+      method: 'POST',
+    });
+    const body = (await response.json()) as { status: string };
+    expect(response.status).toBe(200);
+    expect(body.status).toBe('inactive');
   });
 });

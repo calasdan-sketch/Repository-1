@@ -23,6 +23,16 @@ export interface OrderRecord {
   updated_at: string;
 }
 
+export interface TeamMemberRecord {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AiContentRecord {
   id: number;
   autods_product_id: string | null;
@@ -210,5 +220,49 @@ export class Repository {
     return this.db
       .prepare('SELECT * FROM ai_content ORDER BY id DESC')
       .all() as AiContentRecord[];
+  }
+
+  // ---- Team members ----
+
+  addTeamMember(input: {
+    name: string;
+    email: string;
+    role: string;
+    status?: string;
+  }): TeamMemberRecord {
+    this.db
+      .prepare(
+        `INSERT INTO team_members (name, email, role, status)
+         VALUES (@name, @email, @role, @status)
+         ON CONFLICT(email) DO UPDATE SET
+           name = excluded.name,
+           role = excluded.role,
+           status = excluded.status,
+           updated_at = datetime('now')`,
+      )
+      .run({
+        name: input.name,
+        email: input.email,
+        role: input.role,
+        status: input.status ?? 'active',
+      });
+
+    return this.db
+      .prepare('SELECT * FROM team_members WHERE email = ?')
+      .get(input.email) as TeamMemberRecord;
+  }
+
+  updateTeamMemberStatus(id: number, status: string): void {
+    this.db
+      .prepare(
+        `UPDATE team_members SET status = ?, updated_at = datetime('now') WHERE id = ?`,
+      )
+      .run(status, id);
+  }
+
+  listTeamMembers(): TeamMemberRecord[] {
+    return this.db
+      .prepare('SELECT * FROM team_members ORDER BY id ASC')
+      .all() as TeamMemberRecord[];
   }
 }

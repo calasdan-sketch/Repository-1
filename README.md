@@ -101,6 +101,9 @@ npm run typecheck    # tsc --noEmit
 | GET    | `/admin/orders`                  | List orders                         |
 | GET    | `/admin/ai-content`              | List generated AI content           |
 | GET    | `/admin/system-plan`             | Inspect the multi-repo operating plan |
+| GET    | `/admin/team`                    | List development team members       |
+| POST   | `/admin/team`                    | Add (or update, by email) a development team member |
+| POST   | `/admin/team/:id/deactivate`     | Deactivate a development team member |
 | POST   | `/admin/products/import`         | Import + generate content for a product |
 | POST   | `/admin/ai-content/:id/approve`  | Approve staged AI content           |
 
@@ -117,7 +120,21 @@ three repositories in the `calasdan-sketch` account:
 
 The admin endpoint `GET /admin/system-plan` returns this split as JSON so future
 agents can discover the intended handoffs programmatically before making
-changes.
+changes. The same response includes a `developmentTeam` roster describing the
+roles (human and agent) that maintain the system:
+
+| Role                        | Focus                                            | Primary repository |
+| ---------------------------- | ------------------------------------------------ | ------------------- |
+| Operations Lead              | Human-in-the-loop review and go-live readiness   | `Repository-1`      |
+| Automation Engineer          | Orchestration, scheduler, and admin API surface  | `Repository-1`      |
+| AI Gateway Engineer          | Multi-provider AI routing and public tool access | `repository1`       |
+| Docs & Onboarding Maintainer | Cross-repository runbooks and onboarding         | `new-repository-`   |
+| Coding Agent (Claude)        | Implementation, content generation, scoring      | `Repository-1`      |
+
+Actual people/agents filling these roles are tracked at runtime via the
+`/admin/team` endpoints (backed by the `team_members` table), so the roster
+above stays as role definitions while membership can change without a code
+change.
 
 ## Docker
 

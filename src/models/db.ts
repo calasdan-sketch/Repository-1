@@ -53,6 +53,17 @@ CREATE TABLE IF NOT EXISTS ai_content (
 
 CREATE INDEX IF NOT EXISTS idx_ai_content_product
   ON ai_content (autods_product_id);
+
+CREATE TABLE IF NOT EXISTS team_members (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  role TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE (email)
+);
 `;
 
 /**
