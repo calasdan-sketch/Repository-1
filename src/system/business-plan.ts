@@ -154,5 +154,35 @@ export const businessPlan: BusinessPlan = {
         'Surface machine-readable plans (this document) for future agent handoffs',
       ],
     },
+    {
+      role: 'Copywriter Agent',
+      focus: 'Product and brand copy for the storefront and listings',
+      primaryRepository: 'calasdan-sketch/Repository-1',
+      responsibilities: [
+        'Draft SEO product titles, descriptions, bullets, and tags for staged review',
+        'Keep tone and terminology consistent across product listings',
+        'Hand off approved copy to the Operations Lead for publish approval',
+      ],
+    },
+    {
+      role: 'Marketing Agent',
+      focus: 'Product viability, positioning, and go-to-market messaging',
+      primaryRepository: 'calasdan-sketch/Repository-1',
+      responsibilities: [
+        'Score candidate products for market viability ahead of import',
+        'Propose campaign angles and pricing/promotion input for merchandising',
+        'Flag underperforming listings surfaced through orders and sync data',
+      ],
+    },
+    {
+      role: 'Design Agent',
+      focus: 'Visual presentation of products and storefront assets',
+      primaryRepository: 'calasdan-sketch/Repository-1',
+      responsibilities: [
+        'Prepare product imagery and layout guidance for Shopify listings',
+        'Maintain visual consistency across staged and published content',
+        'Coordinate with the Copywriter Agent on combined listing review',
+      ],
+    },
   ],
 };

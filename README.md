@@ -130,6 +130,9 @@ roles (human and agent) that maintain the system:
 | AI Gateway Engineer          | Multi-provider AI routing and public tool access | `repository1`       |
 | Docs & Onboarding Maintainer | Cross-repository runbooks and onboarding         | `new-repository-`   |
 | Coding Agent (Claude)        | Implementation, content generation, scoring      | `Repository-1`      |
+| Copywriter Agent             | Product/brand copy for listings                 | `Repository-1`      |
+| Marketing Agent              | Product viability and go-to-market messaging     | `Repository-1`      |
+| Design Agent                 | Visual presentation of products and storefront   | `Repository-1`      |
 
 Actual people/agents filling these roles are tracked at runtime via the
 `/admin/team` endpoints (backed by the `team_members` table), so the roster
