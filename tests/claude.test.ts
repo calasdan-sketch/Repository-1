@@ -73,6 +73,26 @@ describe('ClaudeService', () => {
     await expect(service.generateProductContent(product)).rejects.toThrow();
   });
 
+  it('marks the system prompt as an ephemeral cache breakpoint', async () => {
+    const repo = new Repository(createDatabase(':memory:'));
+    const client = fakeClient('{"score": 50, "rationale": "ok"}');
+    const service = new ClaudeService({
+      config: makeTestConfig(),
+      client,
+      repo,
+    });
+
+    await service.scoreProduct(product);
+
+    const call = vi.mocked(client.messages.create).mock.calls[0][0];
+    expect(call.system).toEqual([
+      expect.objectContaining({
+        type: 'text',
+        cache_control: { type: 'ephemeral' },
+      }),
+    ]);
+  });
+
   it('scores a product and clamps to 0-100', async () => {
     const repo = new Repository(createDatabase(':memory:'));
     const client = fakeClient('{"score": 150, "rationale": "high demand"}');

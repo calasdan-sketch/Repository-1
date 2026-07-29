@@ -70,6 +70,20 @@ cp .env.example .env   # then fill in credentials
 
 Secrets are read from environment variables only and must never be committed.
 
+### Claude cost controls
+
+- Every Claude call sends its system prompt as an ephemeral **prompt-cache**
+  breakpoint, so repeat calls reuse cached input tokens instead of paying full
+  price for the (unchanged) instructions on every request. Identical prompts
+  are also deduplicated at the application layer via a prompt-hash cache in
+  the datastore.
+- `CLAUDE_PROVIDER` can be set to `openrouter` to route requests through
+  [OpenRouter](https://openrouter.ai) instead of calling Anthropic directly —
+  useful for price-shopping across providers/models. Requires
+  `OPENROUTER_API_KEY` and, optionally, `OPENROUTER_MODEL` (see
+  `.env.example`). Prompt caching currently only applies to the direct
+  `anthropic` provider.
+
 ### Automation behaviour
 
 - `AUTO_PUBLISH=false` — AI content is staged for manual approval (recommended).

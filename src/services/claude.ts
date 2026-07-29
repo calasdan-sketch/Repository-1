@@ -6,6 +6,8 @@ import { ConfigError } from '../lib/errors.js';
 import { createLogger } from '../lib/logger.js';
 import { Repository } from '../models/repository.js';
 import type { AutoDSProduct } from './autods.js';
+import type { LlmClient } from './llm-client.js';
+import { OpenRouterClient } from './openrouter.js';
 
 const log = createLogger('claude');
 
@@ -22,22 +24,12 @@ export interface ProductScore {
 }
 
 /**
- * Minimal shape of the Anthropic client we depend on, so it can be swapped for
- * a fake in tests without pulling in the real SDK.
+ * Minimal shape of the LLM client we depend on, so it can be swapped for a
+ * fake in tests, or for an alternate provider, without pulling in the real
+ * SDK. Kept as `AnthropicLike` for backwards compatibility with existing
+ * imports; see `./llm-client.ts` for the canonical definition.
  */
-export interface AnthropicLike {
-  messages: {
-    create(args: {
-      model: string;
-      max_tokens: number;
-      system?: string;
-      messages: Array<{ role: 'user' | 'assistant'; content: string }>;
-    }): Promise<{
-      content: Array<{ type: string; text?: string }>;
-      usage?: { input_tokens: number; output_tokens: number };
-    }>;
-  };
-}
+export type AnthropicLike = LlmClient;
 
 function hashPrompt(input: string): string {
   return createHash('sha256').update(input).digest('hex');
@@ -97,6 +89,13 @@ export class ClaudeService {
     if (this.client) {
       return this.client;
     }
+    if (this.config.provider === 'openrouter') {
+      if (!this.config.openrouterApiKey) {
+        throw new ConfigError('OPENROUTER_API_KEY is not configured');
+      }
+      this.client = new OpenRouterClient(this.config.openrouterApiKey);
+      return this.client;
+    }
     if (!this.config.apiKey) {
       throw new ConfigError('ANTHROPIC_API_KEY is not configured');
     }
@@ -106,16 +105,36 @@ export class ClaudeService {
     return this.client;
   }
 
+  /** Model id/slug for the currently configured provider. */
+  private get model(): string {
+    return this.config.provider === 'openrouter'
+      ? this.config.openrouterModel
+      : this.config.model;
+  }
+
   private async complete(
     system: string,
     userPrompt: string,
   ): Promise<{ text: string; inputTokens: number; outputTokens: number }> {
     const response = await this.getClient().messages.create({
-      model: this.config.model,
+      model: this.model,
       max_tokens: this.config.maxTokens,
-      system,
+      // The system prompt is identical across every call for a given task, so
+      // marking it as an ephemeral cache breakpoint lets Anthropic reuse the
+      // cached input tokens on subsequent requests instead of re-billing them.
+      system: [
+        { type: 'text', text: system, cache_control: { type: 'ephemeral' } },
+      ],
       messages: [{ role: 'user', content: userPrompt }],
     });
+
+    log.debug(
+      {
+        cacheReadTokens: response.usage?.cache_read_input_tokens ?? 0,
+        cacheCreationTokens: response.usage?.cache_creation_input_tokens ?? 0,
+      },
+      'Claude prompt cache usage',
+    );
 
     return {
       text: extractText(response.content),
@@ -135,9 +154,9 @@ export class ClaudeService {
   ): Promise<GeneratedProductContent> {
     const system =
       'You are an expert e-commerce copywriter. Produce accurate, ' +
-      'non-misleading, SEO-optimised product content. Respond ONLY with a JSON ' +
-      'object with keys: title (string), description (string, HTML allowed), ' +
-      'bullets (array of strings), tags (array of strings).';
+      'non-misleading, SEO-optimised product content. Respond ONLY with ' +
+      'JSON: {title: string, description: string (HTML allowed), ' +
+      'bullets: string[], tags: string[]}.';
 
     const userPrompt = [
       'Create marketing content for this product:',
@@ -193,9 +212,8 @@ export class ClaudeService {
     criteria = 'margin potential, demand, and competition',
   ): Promise<ProductScore> {
     const system =
-      'You are a dropshipping product analyst. Evaluate the product and ' +
-      'respond ONLY with a JSON object: { "score": number (0-100), ' +
-      '"rationale": string }.';
+      'You are a dropshipping product analyst. Respond ONLY with JSON: ' +
+      '{score: number (0-100), rationale: string}.';
 
     const userPrompt = [
       `Evaluate this product against: ${criteria}.`,
