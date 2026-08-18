@@ -29,4 +29,22 @@ describe('config', () => {
     resetConfigCache();
     expect(loadConfig().port).toBe(8080);
   });
+
+  it('defaults the Claude provider to anthropic', () => {
+    delete process.env.CLAUDE_PROVIDER;
+    resetConfigCache();
+    expect(loadConfig().claude.provider).toBe('anthropic');
+  });
+
+  it('accepts openrouter as an alternate Claude provider', () => {
+    process.env.CLAUDE_PROVIDER = 'openrouter';
+    resetConfigCache();
+    expect(loadConfig().claude.provider).toBe('openrouter');
+  });
+
+  it('rejects an unknown Claude provider', () => {
+    process.env.CLAUDE_PROVIDER = 'not-a-real-provider';
+    resetConfigCache();
+    expect(() => loadConfig()).toThrow();
+  });
 });

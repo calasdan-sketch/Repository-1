@@ -70,4 +70,33 @@ describe('Repository', () => {
     const all = repo.listAiContent();
     expect(all[0].status).toBe('approved');
   });
+
+  it('adds and updates team members by email', () => {
+    const created = repo.addTeamMember({
+      name: 'Dan Calas',
+      email: 'dan@example.com',
+      role: 'Operations Lead',
+    });
+    expect(created.status).toBe('active');
+
+    const updated = repo.addTeamMember({
+      name: 'Dan Calas',
+      email: 'dan@example.com',
+      role: 'Automation Engineer',
+      status: 'active',
+    });
+    expect(updated.id).toBe(created.id);
+    expect(updated.role).toBe('Automation Engineer');
+    expect(repo.listTeamMembers()).toHaveLength(1);
+  });
+
+  it('deactivates a team member', () => {
+    const member = repo.addTeamMember({
+      name: 'Agent Claude',
+      email: 'agent@example.com',
+      role: 'Coding Agent',
+    });
+    repo.updateTeamMemberStatus(member.id, 'inactive');
+    expect(repo.listTeamMembers()[0].status).toBe('inactive');
+  });
 });

@@ -20,7 +20,14 @@ export function makeTestConfig(overrides: Partial<AppConfig> = {}): AppConfig {
       apiToken: 'autods-token',
       storeId: 'store-1',
     },
-    claude: { apiKey: 'anthropic-key', model: 'claude-x', maxTokens: 100 },
+    claude: {
+      apiKey: 'anthropic-key',
+      model: 'claude-x',
+      maxTokens: 100,
+      provider: 'anthropic',
+      openrouterApiKey: '',
+      openrouterModel: 'anthropic/claude-3.5-sonnet',
+    },
     automation: {
       autoPublish: false,
       autoFulfill: false,

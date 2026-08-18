@@ -39,6 +39,9 @@ const configSchema = z.object({
     apiKey: z.string().default(''),
     model: z.string().default('claude-3-5-sonnet-20241022'),
     maxTokens: z.coerce.number().int().positive().default(1024),
+    provider: z.enum(['anthropic', 'openrouter']).default('anthropic'),
+    openrouterApiKey: z.string().default(''),
+    openrouterModel: z.string().default('anthropic/claude-3.5-sonnet'),
   }),
 
   automation: z.object({
@@ -82,6 +85,9 @@ export function loadConfig(): AppConfig {
       apiKey: process.env.ANTHROPIC_API_KEY,
       model: process.env.CLAUDE_MODEL,
       maxTokens: process.env.CLAUDE_MAX_TOKENS,
+      provider: process.env.CLAUDE_PROVIDER,
+      openrouterApiKey: process.env.OPENROUTER_API_KEY,
+      openrouterModel: process.env.OPENROUTER_MODEL,
     },
     automation: {
       autoPublish: booleanFromEnv.parse(process.env.AUTO_PUBLISH),

@@ -50,6 +50,37 @@ export function createAdminRouter(
     res.json({ plan: businessPlan });
   });
 
+  router.get('/team', (_req: Request, res: Response) => {
+    res.json({ team: repo.listTeamMembers() });
+  });
+
+  // Add a member to the development team, or update them by email.
+  router.post('/team', (req: Request, res: Response) => {
+    const { name, email, role, status } = req.body ?? {};
+    if (!name || !email || !role) {
+      res.status(400).json({ error: 'name, email, and role are required' });
+      return;
+    }
+    const member = repo.addTeamMember({
+      name: String(name),
+      email: String(email),
+      role: String(role),
+      status: status ? String(status) : undefined,
+    });
+    res.status(201).json({ member });
+  });
+
+  // Deactivate a development team member.
+  router.post('/team/:id/deactivate', (req: Request, res: Response) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      res.status(400).json({ error: 'invalid id' });
+      return;
+    }
+    repo.updateTeamMemberStatus(id, 'inactive');
+    res.json({ id, status: 'inactive' });
+  });
+
   // Trigger sourcing + content generation for a specific AutoDS product.
   router.post('/products/import', async (req: Request, res: Response) => {
     const { autodsProductId } = req.body ?? {};
